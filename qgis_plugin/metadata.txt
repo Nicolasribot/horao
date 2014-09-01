@@ -9,7 +9,7 @@
 
 
 [general]
-name=Canvas3D
+name=Horao
 qgisMinimumVersion=2.0
 description=3D canvas
 version=0.1

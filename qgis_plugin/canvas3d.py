@@ -37,7 +37,7 @@ import math
 
 qset = QSettings( "oslandia", "horao_qgis_plugin" )
 
-SIMPLEVIEWER_BIN = qset.value( "horaoviewer_path", "horaoViewerd" )
+SIMPLEVIEWER_BIN = qset.value( "horaoviewer_path", "horaoViewer" )
 
 # Turn to true to activate draping by the viewer
 DEM_VIEWER_DRAPING = qset.value( "dem_viewer_draping", True )

@@ -23,7 +23,7 @@
 
 
 def name():
-    return "Canvas3D"
+    return "Horao"
 
 
 def description():
