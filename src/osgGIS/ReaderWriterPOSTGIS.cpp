@@ -34,8 +34,6 @@
 #include <gdal/cpl_conv.h>
 
 #include <libpq-fe.h>
-#include <postgres_fe.h>
-#include <catalog/pg_type.h>
 
 #define DEBUG_OUT if (0) std::cerr
 

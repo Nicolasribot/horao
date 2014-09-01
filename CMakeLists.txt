@@ -27,15 +27,15 @@ find_package( OpenSceneGraph COMPONENTS osgQt osgViewer osgGA osgDB osgUtil osgT
 find_package( OpenGL REQUIRED )
 find_package( GDAL REQUIRED )
 #find_package( LibXml2 REQUIRED)
-find_package( PostgreSQL REQUIRED)
 set( CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake;${CMAKE_MODULE_PATH}" )
+find_package( LibPQ REQUIRED)
 find_package( LWGEOM REQUIRED)
 
 #-- note that SYSTEM turns -I/path to -isystem and avoid warnings in external libs
 include_directories( SYSTEM 
     ${OPENSCENEGRAPH_INCLUDE_DIRS} 
     #${LIBXML2_INCLUDE_DIR} 
-    ${PostgreSQL_INCLUDE_DIR}
+    ${LibPQ_INCLUDE_DIR}
     ${GDAL_INCLUDE_DIR}
     ${CMAKE_CURRENT_LIST_DIR}/src
 )
