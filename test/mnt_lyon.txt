@@ -1,11 +1,11 @@
 # run from build directory
 # LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$PWD/lib ./bin/horaoViewerd  ../test/mnt_lyon.txt
-lookAt origin="1845599 5177401 0" extent="1845599 5168599,1853401 5177401"
+lookAt origin="1849500 5173000 0" extent="1845599 5168599,1853401 5177401"
 loadElevation \
     id="terrain" \
-    origin="1845599 5177401 2" \
-    extent="1829995 5150995,1869005 5195005" \
-    tile_size="5000" \
+    origin="1849500 5173000 0" \
+    extent="1845599 5168599,1853401 5177401" \
+    tile_size="1000" \
     lod="1000000 50000 5000 1000 10" \
     mesh_size_0="100" \
     mesh_size_1="50" \
