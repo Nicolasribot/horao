@@ -1,0 +1,22 @@
+# run from build directory
+# LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$PWD/lib ./bin/horaoViewerd  ../test/mnt_lyon.txt
+lookAt origin="1845599 5177401 0" extent="1845599 5168599,1853401 5177401"
+loadElevation \
+    id="terrain" \
+    origin="1845599 5177401 2" \
+    extent="1829995 5150995,1869005 5195005" \
+    tile_size="5000" \
+    lod="1000000 50000 5000 1000 10" \
+    mesh_size_0="100" \
+    mesh_size_1="50" \
+    mesh_size_2="25" \
+    mesh_size_3="10" \
+    file="../test/MNT2009_Altitude_10m_CC46.tif"
+setSymbology \
+    id="terrain" \
+    fill_color_diffuse="#90aa90ff" \
+    fill_color_ambient="#90aa90ff" \
+    fill_color_specular="#000000ff" \
+    fill_color_shininess="5."
+
+
