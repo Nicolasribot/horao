@@ -32,11 +32,16 @@
 #include <sstream>
 #include <cassert>
 
-#include <gdal/gdal_priv.h>
-#include <gdal/cpl_conv.h>
+#include <gdal_priv.h>
+#include <cpl_conv.h>
 
-#define DEBUG_OUT if (0) std::cerr
+#define DEBUG_OUT if (1) std::cerr
 #define ERROR (std::cerr << "error: ")
+
+int crop(int i, int min, int max)
+{
+    return i > min ? ( i < max ? i : max ) : min;
+}
 
 void MyErrorHandler( CPLErr , int /*err_no*/, const char* msg )
 {
@@ -171,64 +176,102 @@ struct ReaderWriterMNT : osgDB::ReaderWriter {
 
         assert( pixelPerMetreX > 0 && pixelPerMetreY > 0 );
 
-        const int Lx = std::max( 1, int( meshSize * pixelPerMetreX ) ) ;
-
-        const int Ly = std::max( 1, int( meshSize * pixelPerMetreY ) ) ;
-
-        // compute the position of the tile
-        int x= ( xmin - originX ) * pixelPerMetreX ;
-
-        int y= ( originY - ymax ) * pixelPerMetreY ;
-
-        int w= ( xmax - xmin ) * pixelPerMetreX / Lx ;
-
-        int h= ( ymax - ymin ) * pixelPerMetreY / Ly;
-
-        // resize to fit data (avoid out of bound)
-        if ( y < 0 ) {
-            h = std::max( 0, h+y );
-            y=0;
-        }
-
-        if ( y + h > pixelHeight ) {
-            h = std::max( 0, pixelHeight - y );
-        }
-
-        if ( x < 0 ) {
-            w = std::max( 0, w+x );
-            x=0;
-        }
-
-        if ( x + w > pixelWidth ) {
-            w = std::max( 0, pixelWidth - x );
-        }
-
-
-        DEBUG_OUT << std::setprecision( 8 ) << " xmin=" << xmin << " ymin=" << ymin << " xmax=" << xmax << " ymax=" << ymax << "\n";
-        DEBUG_OUT << " originX=" << originX << " originY=" << originY << " pixelWidth=" << pixelWidth << " pixelHeight=" << pixelHeight
-                  << " pixelPerMetreX=" << pixelPerMetreX
-                  << " pixelPerMetreY=" << pixelPerMetreY
-                  << "\n";
-        DEBUG_OUT << " x=" << x << " y=" << y << " w=" << w << " h=" << h << " Lx=" << Lx  << " Ly=" << Ly << "\n";
-
-        assert( h >= 0 && w >= 0 );
-
         osg::ref_ptr<osg::HeightField> hf( new osg::HeightField() );
-
-        hf->allocate( w, h );
-        hf->setXInterval( ( xmax-xmin )/( w-1 ) );
-        hf->setYInterval( ( ymax-ymin )/( h-1 ) );
+        hf->allocate( int( ( xmax-xmin )/meshSize ),  
+                      int( ( ymax-ymin )/meshSize ) );
+        hf->setXInterval( ( xmax-xmin ) / hf->getNumColumns() );
+        hf->setYInterval( ( ymax-ymin ) / hf->getNumRows() );
         hf->setOrigin( osg::Vec3( xmin, ymin, 0 ) - origin );
+        
+        // we want gdal to give us an image with one pixel per grid vertex
+        // gdal will decimate / duplicate pixels if needed
+        // we need to fetch on pixels that are entierly in the mnt image
+        // we compute the mnt pixels indices at the top left and bottom righ corners
+        //
+        const double tilePixelsBbox[4] = {
+            xmin - 0.5*hf->getXInterval(),
+            ymin - 0.5*hf->getYInterval(),
+            xmax + 0.5*hf->getXInterval(),
+            ymax + 0.5*hf->getYInterval()
+        };
+        const double mntBboxForTilePixels[4] = {
+            originX + 0.5*hf->getXInterval(),
+            originY - pixelHeight/pixelPerMetreY + 0.5*hf->getYInterval(),
+            originX + pixelWidth/pixelPerMetreX - 0.5*hf->getXInterval(),
+            originY - 0.5*hf->getYInterval()
+        };
+        const double intersection[4] = {
+            std::max( mntBboxForTilePixels[0], tilePixelsBbox[0]),
+            std::max( mntBboxForTilePixels[1], tilePixelsBbox[1]),
+            std::min( mntBboxForTilePixels[2], tilePixelsBbox[2]),
+            std::min( mntBboxForTilePixels[3], tilePixelsBbox[3]),
+        };
+
+        // now if the grid vertices is in this intersection, the grid pixel is
+        // completely in the mnt image 
+
+        // pixels centers are at xmin + i*grid_size
+        const int gridPixelTopLeft[2] = {
+            crop( std::ceil( (intersection[0] - xmin )/hf->getXInterval() ), 0, hf->getNumColumns() ),
+            crop( std::ceil( ( ymax - intersection[3] )/hf->getYInterval() ), 0, hf->getNumRows() )
+        };
+        const int gridPixelBottomRight[2] = {
+            crop( std::floor( (intersection[2] - xmin )/hf->getXInterval() ), 0, hf->getNumColumns() ),
+            crop( std::floor( ( ymax - intersection[1] )/hf->getYInterval() ), 0, hf->getNumRows() )
+        };
+
+        // now get the pixels indexes of the mnt image for the top left corner
+        // of the top left pixel
+        const int mntPixelTopLeft[2] = {
+             int( ( xmin + gridPixelTopLeft[0]*hf->getXInterval() - 0.5*hf->getXInterval() - originX )*pixelPerMetreX ),
+             std::min( int( ( originY - ymax + gridPixelTopLeft[1]*hf->getYInterval() + 0.5*hf->getYInterval() )*pixelPerMetreY), pixelHeight-1)
+        };
+
+        const int mntPixelBottomRight[2] = {
+             std::min( int( ( xmin + gridPixelBottomRight[0]*hf->getXInterval() + 0.5*hf->getXInterval() - originX )*pixelPerMetreX ), pixelWidth-1 ),
+             int( ( originY - ymax + gridPixelBottomRight[1]*hf->getYInterval() - 0.5*hf->getYInterval() )*pixelPerMetreY )
+        };
 
         GDALRasterBand* band = raster->GetRasterBand( 1 );
         GDALDataType dType = band->GetRasterDataType();
         int dSizeBits = GDALGetDataTypeSize( dType );
+        const int w = gridPixelBottomRight[0] - gridPixelTopLeft[0] + 1;
+        const int h = gridPixelBottomRight[1] - gridPixelTopLeft[1] + 1;
         // vector is automatically deleted, and data are contiguous
-        std::vector<char> buffer( w * h * dSizeBits / 8  );
-        char* blockData = &buffer[0];
+        std::vector<char> buffer(  w  *  h  *  dSizeBits / 8  );
+        char* blockData = NULL;
+
+        DEBUG_OUT << " intersection " 
+            << intersection[0] << " "
+            << intersection[1] << " "
+            << intersection[2] << " "
+            << intersection[3] << "\n";
+
+        DEBUG_OUT << " grid " << hf->getNumColumns() << "x" << hf->getNumColumns() << "\n";
+        DEBUG_OUT << " grid pixels " 
+            << gridPixelTopLeft[0] << " "
+            << gridPixelTopLeft[1] << " "
+            << gridPixelBottomRight[0] << " "
+            << gridPixelBottomRight[1] << "\n";
+
+        DEBUG_OUT << " convert pixels " 
+            << mntPixelTopLeft[0] << " "
+            << mntPixelTopLeft[1] << " "
+            << mntPixelBottomRight[0] << " "
+            << mntPixelBottomRight[1] << "\n";
+        DEBUG_OUT << " into image " << w << "x" << h << "\n";
 
         if ( buffer.size() ) {
-            band->RasterIO( GF_Read, x, y, w * Lx, h * Ly, blockData, w, h, dType, 0, 0 );
+            blockData = &buffer[0];
+            band->RasterIO( GF_Read, 
+                    mntPixelTopLeft[0], 
+                    mntPixelTopLeft[1],
+                    mntPixelBottomRight[0] - mntPixelTopLeft[0],
+                    mntPixelBottomRight[1] - mntPixelTopLeft[1],
+                    blockData, 
+                    w, 
+                    h, 
+                    dType, 0, 0 );
         }
 
         double dataOffset;
@@ -248,12 +291,26 @@ struct ReaderWriterMNT : osgDB::ReaderWriter {
         }
 
         float zMax = 0;
+        const int numRows = hf->getNumRows();
+        for ( int i = gridPixelTopLeft[1]; i <= gridPixelBottomRight[1]; ++i ) {
+            for ( int j = gridPixelTopLeft[0]; j <= gridPixelBottomRight[0]; ++j ) {
 
-        for ( int i = 0; i < h; ++i ) {
-            for ( int j = 0; j < w; ++j ) {
-                const float z = float( ( SRCVAL( blockData, dType, i*w+j ) * dataScale )  + dataOffset );
-                hf->setHeight( j, h-1-i, z );
+                assert(  i - gridPixelTopLeft[1] > 0 && i - gridPixelTopLeft[1] < h );
+                assert(  j - gridPixelTopLeft[0] > 0 && j - gridPixelTopLeft[0] < w );
+                const float z = float( ( SRCVAL( blockData, dType, 
+                                ( i - gridPixelTopLeft[1] )*w + ( j - gridPixelTopLeft[0] ) ) 
+                            * dataScale )  + dataOffset );
+                assert( j >= 0 && j <= int(hf->getNumColumns()) ) ;
+                assert( numRows - i >= 0 && numRows - i <= numRows ) ;
+
+                hf->setHeight( j, numRows-i, z );
                 zMax = std::max( z, zMax );
+                if ( z > 300 ){ 
+                    DEBUG_OUT << " z " << z << " at " << i << " " << j << "\n";
+                    DEBUG_OUT << " z " << z << " at " 
+                        << j - gridPixelTopLeft[0] << " " 
+                        << i - gridPixelTopLeft[1] << "\n";
+                }
             }
         }
 

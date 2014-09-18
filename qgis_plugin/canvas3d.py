@@ -47,7 +47,7 @@ Z_VECTOR_FIGHT_GAP = qset.value( "z_vector_fight", .5 )
 # distance, in meters on top of DEM layer
 Z_DEM_FIGHT_GAP = qset.value( "z_dem_fight", 1.5 )
 # tile size
-TILE_SIZE = qset.value( "tile_size", 2000 )
+TILE_SIZE = qset.value( "tile_size", 500 )
 
 # will create the settings file if not present
 qset.setValue( "horaoviewer_path", SIMPLEVIEWER_BIN )
