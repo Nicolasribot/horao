@@ -56,7 +56,7 @@ And force the upgrade of a particular version :
     cmake .
 
 Once compilation succeeded, symlink to install the QGis plugin and put
-`horaoViewerd` among system binaries :
+`horaoViewerd` among system binaries, from top level source dir:
 
     ln -sf `pwd`/qgis_plugin ~/.qgis2/python/plugins/Canvas3D
     ln -sf `pwd`/bin/horaoViewerd /usr/local/bin/horaoViewerd
