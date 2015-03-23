@@ -177,7 +177,7 @@ ViewerWidget::ViewerWidget():
         stateset->addUniform( new osg::Uniform( "m_Texture", texture ) );
 
         // original image view
-        if( 1 ) {
+        if( 0 ) {
 
             //osg::Texture2D* tex = new osg::Texture2D;
 
