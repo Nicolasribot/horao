@@ -54,6 +54,12 @@ elseif(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror -Wno-error=format")
 endif()
 
+include(CheckFunctionExists)
+check_function_exists(strcasestr HAVE_STRCASESTR)
+if(HAVE_STRCASESTR)
+ add_definitions("-DHAVE_STRCASESTR")
+endif()
+
 add_subdirectory( src )
 add_subdirectory( qgis_plugin )
 
