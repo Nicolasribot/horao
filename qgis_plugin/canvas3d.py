@@ -310,11 +310,11 @@ class Canvas3D:
 
     def setExtent( self, epsg, xmin, ymin, xmax, ymax ):
         center = self.fullExtent.center()
-        #self.sendToViewer( 'addPlane', { 'id' : 'p0',
-        #                                 'extent' : "%f %f,%f %f" % (xmin, ymin, xmax, ymax),
-        #                                 'origin' : "%f %f 1" % (center.x(), center.y()) } )
-        #self.sendToViewer( 'setSymbology', { 'id' : 'p0', 
-        #                                     'fill_color_diffuse': '#ffffffff' } )
+        self.sendToViewer( 'addPlane', { 'id' : 'p0',
+                                         'extent' : "%f %f,%f %f" % (xmin, ymin, xmax, ymax),
+                                         'origin' : "%f %f 1" % (center.x(), center.y()) } )
+        self.sendToViewer( 'setSymbology', { 'id' : 'p0', 
+                                             'fill_color_diffuse': '#ffffffff' } )
 
     def setLayerVisibility( self, layer, visibility ):
         if not self.layers.has_key( layer ):
