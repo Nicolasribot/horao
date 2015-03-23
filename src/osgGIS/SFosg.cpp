@@ -1066,7 +1066,7 @@ void Mesh::push_back( const LWGEOM* lwgeom )
     case LINETYPE:
         throw std::runtime_error( "LINETYPE not handled" );
     case MULTILINETYPE:
-        throw std::runtime_error( "MULTIPOINTTYPE not handled" );
+        throw std::runtime_error( "MULTILINETYPE not handled" );
     case MULTISURFACETYPE:
         throw std::runtime_error( "MULTISURFACETYPE not handled" );
     case MULTICURVETYPE:
