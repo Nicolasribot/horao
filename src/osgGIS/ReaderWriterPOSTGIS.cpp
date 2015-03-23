@@ -30,8 +30,8 @@
 #include <sstream>
 #include <cassert>
 
-#include <gdal/gdal_priv.h>
-#include <gdal/cpl_conv.h>
+#include <gdal_priv.h>
+#include <cpl_conv.h>
 
 #include <libpq-fe.h>
 

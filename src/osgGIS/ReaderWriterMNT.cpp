@@ -32,8 +32,8 @@
 #include <sstream>
 #include <cassert>
 
-#include <gdal/gdal_priv.h>
-#include <gdal/cpl_conv.h>
+#include <gdal_priv.h>
+#include <cpl_conv.h>
 
 #define DEBUG_OUT if (0) std::cerr
 #define ERROR (std::cerr << "error: ")
