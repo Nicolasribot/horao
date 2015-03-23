@@ -64,4 +64,4 @@ From top level source dir:
 
 An from build dir:
 
-    ln -sf `pwd`/bin/horaoViewer/usr/local/bin/horaoViewer
+    ln -sf `pwd`/bin/horaoViewer /usr/local/bin/horaoViewer
