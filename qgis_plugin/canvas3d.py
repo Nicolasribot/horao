@@ -205,7 +205,7 @@ class Canvas3D:
                     args['geocolumn'] = geocolumn
 
                 args['id'] = layer.id()
-                args['conn_info'] = ' '.join( ["%s='%s'" % (k,v) for k,v in connection.iteritems() if k in ['dbname','user','port']] )
+                args['conn_info'] = ' '.join( ["%s='%s'" % (k,v) for k,v in connection.iteritems() if k in ['dbname','user','port','host']] )
                 extent = layer.extent()
 
                 center = self.fullExtent.center()
