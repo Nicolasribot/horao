@@ -56,7 +56,7 @@ void errorreporter( const char* fmt, va_list ap )
         char* ptr;
     } msg;
 
-    if ( !lw_vasprintf ( &msg.ptr, fmt, ap ) ) {
+    if ( !vasprintf ( &msg.ptr, fmt, ap ) ) {
         va_end ( ap );
         throw std::runtime_error( "unexpected error" );
     }
