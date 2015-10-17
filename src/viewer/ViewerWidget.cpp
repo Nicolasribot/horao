@@ -56,7 +56,7 @@ const char* vertSourceSSAO = {
     "}\n"
 };
 
-const char* fragSourceSSAO {
+const char* fragSourceSSAO = {
     "uniform vec2 g_Resolution;\n"
     "uniform sampler2D m_Texture;\n"
     "varying vec2 texCoord;\n"
