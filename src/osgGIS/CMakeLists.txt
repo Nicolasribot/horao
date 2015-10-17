@@ -4,6 +4,12 @@ add_library( osgdb_postgis MODULE
 )
 set_target_properties( osgdb_postgis PROPERTIES DEBUG_POSTFIX "d" )
 set_target_properties( osgdb_postgis PROPERTIES PREFIX "")
+# --Nicolasribot: adds target library for libpq
+# ld error on OSX El Capitan: 
+#[ 95%] Linking CXX shared module ../../lib/osgdb_postgis.so
+#Undefined symbols for architecture x86_64:
+#  "_PQclear", referenced from:
+#      ReaderWriterPOSTGIS::readNod
 target_link_libraries( osgdb_postgis
 	${OPENSCENEGRAPH_LIBRARIES}  
     ${PostgreSQL_LIBRARY}
@@ -11,6 +17,7 @@ target_link_libraries( osgdb_postgis
     ${OPENGL_glu_LIBRARY}
     ${OPENGL_gl_LIBRARY}
     ${GDAL_LIBRARY}
+    ${LibPQ_LIBRARY}
     poly2tri
 )
 
