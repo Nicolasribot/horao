@@ -1,0 +1,12 @@
+-- test viewer:
+osgviewer "conn_info=\"dbname=nicolas host='localhost' user='nicolas'\" query=\"SELECT gid, geom AS geom FROM riviere;\" origin=\"572945 6137455.5 0.0\"".postgisd
+
+horaoViewer loadVectorPostgis conninfo="dbname=nicolas host='localhost' user='nicolas'" "SELECT gid, geom FROM riviere" origin="572945 6137455.5 50.0"
+
+
+--- idees:
+afficher des attributs sur les objets
+classifier les objets
+reconstruire un objet 3D reel par fusion de colonnes intersectant le raster
+sauver la position de la fenetre et sa dimension.
+test postgis pour construire des objets 3D empilés
