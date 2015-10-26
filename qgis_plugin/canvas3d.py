@@ -44,7 +44,7 @@ qset = QSettings( "oslandia", "horao_qgis_plugin" )
 SIMPLEVIEWER_BIN = qset.value( "horaoviewer_path", "horaoViewer" )
 
 # Turn to true to activate draping by the viewer
-DEM_VIEWER_DRAPING = qset.value( "dem_viewer_draping", True)
+DEM_VIEWER_DRAPING = qset.value( "dem_viewer_draping", True )
 
 # distance, in meters, between each vector layer
 Z_VECTOR_FIGHT_GAP = qset.value( "z_vector_fight", .5 )
@@ -238,10 +238,9 @@ class Canvas3D:
                 fov = 29.1 * math.pi / 180.0
                 altMax = 0.5 * (cnv.extent().height() / cnv.scale() * lmax ) / math.tan(fov/2.0)
                 altMin = 0.5 * (cnv.extent().height() / cnv.scale() * lmin ) / math.tan(fov/2.0)
-                # Nicolasribot: test without tiles
-                #args['lod'] = "%f %f" % (altMax, altMin)
-                args['query'] = query
-                #args['tile_size'] = TILE_SIZE
+                args['lod'] = "%f %f" % (altMax, altMin)
+                args['query_0'] = query
+                args['tile_size'] = TILE_SIZE
                 if elevationFile and not is3D and layer.geometryType() == 2:
                     args['elevation'] = elevationFile
                     
