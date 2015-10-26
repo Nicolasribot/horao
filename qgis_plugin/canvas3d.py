@@ -33,6 +33,10 @@ import sys
 import subprocess
 import math
 
+# for debug
+import pydevd
+pydevd.settrace('localhost', port=55230, stdoutToServer=True, stderrToServer=True)
+
 # constants.
 
 qset = QSettings( "oslandia", "horao_qgis_plugin" )
@@ -40,7 +44,7 @@ qset = QSettings( "oslandia", "horao_qgis_plugin" )
 SIMPLEVIEWER_BIN = qset.value( "horaoviewer_path", "horaoViewer" )
 
 # Turn to true to activate draping by the viewer
-DEM_VIEWER_DRAPING = qset.value( "dem_viewer_draping", True )
+DEM_VIEWER_DRAPING = qset.value( "dem_viewer_draping", True)
 
 # distance, in meters, between each vector layer
 Z_VECTOR_FIGHT_GAP = qset.value( "z_vector_fight", .5 )
@@ -234,9 +238,10 @@ class Canvas3D:
                 fov = 29.1 * math.pi / 180.0
                 altMax = 0.5 * (cnv.extent().height() / cnv.scale() * lmax ) / math.tan(fov/2.0)
                 altMin = 0.5 * (cnv.extent().height() / cnv.scale() * lmin ) / math.tan(fov/2.0)
-                args['lod'] = "%f %f" % (altMax, altMin)
-                args['query_0'] = query
-                args['tile_size'] = TILE_SIZE
+                # Nicolasribot: test without tiles
+                #args['lod'] = "%f %f" % (altMax, altMin)
+                args['query'] = query
+                #args['tile_size'] = TILE_SIZE
                 if elevationFile and not is3D and layer.geometryType() == 2:
                     args['elevation'] = elevationFile
                     
@@ -280,13 +285,18 @@ class Canvas3D:
                     altMax = 0.5 * (cnv.extent().height() / cnv.scale() * lmax ) / math.tan(fov/2.0)
                     altMin = 0.5 * (cnv.extent().height() / cnv.scale() * lmin ) / math.tan(fov/2.0)
 
+                    altMax = 1000
+
+                    # Nicolasribot:
+                    # test without lod, no tile
                     self.sendToViewer( 'loadElevation', { 'id': layer.id(),
                                                           'file': fileSrc,
                                                           'extent' : extent,
                                                           'origin' : origin,
-                                                          'mesh_size_0' : 10, # ???
-                                                          'lod' : "%f %f" % (altMax, altMin),
-                                                          'tile_size' : TILE_SIZE
+                                                          'mesh_size' : 10 # ???
+                                                          # 'mesh_size_0' : 10, # ???
+                                                          # 'lod' : "%f %f" % (altMax, altMin),
+                                                          # 'tile_size' : TILE_SIZE
                                                           } )
                 else:
                     pass
@@ -313,7 +323,7 @@ class Canvas3D:
         self.sendToViewer( 'addPlane', { 'id' : 'p0',
                                          'extent' : "%f %f,%f %f" % (xmin, ymin, xmax, ymax),
                                          'origin' : "%f %f 1" % (center.x(), center.y()) } )
-        self.sendToViewer( 'setSymbology', { 'id' : 'p0', 
+        self.sendToViewer( 'setSymbology', { 'id' : 'p0',
                                              'fill_color_diffuse': '#ffffffff' } )
 
     def setLayerVisibility( self, layer, visibility ):
@@ -341,6 +351,7 @@ class Canvas3D:
     # qgis signal : layers changed
     def onLayersChanged( self ):
         renderer = self.iface.mapCanvas().mapRenderer()
+
         # returns visible layers
         layers = renderer.layerSet()
         for layer, p in self.layers.iteritems():
